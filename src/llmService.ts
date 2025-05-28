@@ -4,7 +4,7 @@ import { LLMResponse, ContextualSuggestion } from './types';
 
 export class LLMService {
   private model: ChatGoogleGenerativeAI | null = null;
-  private apiKey: string = 'AIzaSyBEerOO5jAJRt5ccFyHjniaUptzdS3vx0I';
+  private apiKey: string = 'API-KEY';
   private modelName: string = 'gemini-2.0-flash';
   constructor() {
     console.log('AI Assistant: LLMService constructor called');
@@ -16,7 +16,7 @@ export class LLMService {
     const config = vscode.workspace.getConfiguration('aiAssistant');
     // this.apiKey = config.get<string>('gemini.apiKey') || '';
     // this.modelName = config.get<string>('gemini.modelName') || 'gemini-pro';
-    this.apiKey = "AIzaSyBEerOO5jAJRt5ccFyHjniaUptzdS3vx0I";
+    this.apiKey = "API-KEY";
     this.modelName = 'gemini-2.0-flash';
     console.log('AI Assistant: Configuration loaded - apiKey set:', !!this.apiKey, 'modelName:', this.modelName);
   }
