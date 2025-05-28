@@ -1,0 +1,139 @@
+{
+  "name": "ai-assistant",
+  "displayName": "AI Assistant",
+  "description": "AI-powered code assistant using Google Gemini for contextual suggestions, vulnerability reports, and code analysis",
+  "version": "1.0.0",
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "categories": [
+    "Other",
+    "Machine Learning",
+    "Linters"
+  ],
+  "keywords": [
+    "ai",
+    "assistant",
+    "gemini",
+    "code-analysis",
+    "vulnerability",
+    "refactoring"
+  ],
+  "activationEvents": [
+    "onLanguage:javascript",
+    "onLanguage:typescript",
+    "onLanguage:python",
+    "onLanguage:java",
+    "onLanguage:go",
+    "onLanguage:csharp",
+    "onLanguage:cpp",
+    "onLanguage:c",
+    "onLanguage:ruby",
+    "onLanguage:php",
+    "onLanguage:rust",
+    "onLanguage:kotlin",
+    "onLanguage:swift",
+    "onCommand:aiAssistant.toggleView"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "configuration": {
+      "title": "AI Assistant",
+      "properties": {
+        "aiAssistant.gemini.apiKey": {
+          "type": "string",
+          "default": "",
+          "description": "Your Google Gemini API Key",
+          "markdownDescription": "Your Google Gemini API Key. Get one from [Google AI Studio](https://makersuite.google.com/app/apikey)"
+        },
+        "aiAssistant.gemini.modelName": {
+          "type": "string",
+          "default": "gemini-pro",
+          "description": "The Gemini model to use",
+          "enum": [
+            "gemini-pro",
+            "gemini-pro-vision"
+          ]
+        },
+        "aiAssistant.suggestions.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable real-time contextual suggestions"
+        },
+        "aiAssistant.suggestions.debounceMs": {
+          "type": "number",
+          "default": 1000,
+          "description": "Debounce time in milliseconds for contextual suggestions"
+        }
+      }
+    },
+    "commands": [
+      {
+        "command": "aiAssistant.toggleView",
+        "title": "AI Assistant: Show/Hide Assistant Panel",
+        "category": "AI Assistant"
+      },
+      {
+        "command": "aiAssistant.generateVulnerabilityReport",
+        "title": "Generate Vulnerability Report",
+        "category": "AI Assistant"
+      },
+      {
+        "command": "aiAssistant.explainCode",
+        "title": "Explain Selected Code",
+        "category": "AI Assistant"
+      },
+      {
+        "command": "aiAssistant.suggestRefactoring",
+        "title": "Suggest Refactoring",
+        "category": "AI Assistant"
+      },
+      {
+        "command": "aiAssistant.getTestIdeas",
+        "title": "Get Test Case Ideas",
+        "category": "AI Assistant"
+      }
+    ],
+    "views": {
+      "aiAssistantView": [
+        {
+          "type": "webview",
+          "id": "aiAssistant.sidebarView",
+          "name": "AI Assistant",
+          "when": "aiAssistant.viewVisible"
+        }
+      ]
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "aiAssistantView",
+          "title": "AI Assistant",
+          "icon": "$(robot)"
+        }
+      ]
+    },
+    "keybindings": [
+      {
+        "command": "aiAssistant.toggleView",
+        "key": "ctrl+shift+a",
+        "mac": "cmd+shift+a"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "test": "npm run compile && npm audit"
+  },
+  "devDependencies": {
+    "@types/node": "^18.0.0",
+    "@types/vscode": "^1.74.0",
+    "typescript": "^4.9.0"
+  },
+  "dependencies": {
+    "@langchain/google-genai": "^0.1.0",
+    "langchain": "^0.3.27"
+  }
+}

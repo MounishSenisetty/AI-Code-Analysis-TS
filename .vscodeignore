@@ -1,0 +1,16 @@
+.vscode/**
+.github/**
+node_modules/**
+out/test/**
+src/**
+*.md
+*.json
+.*ignore
+.*rc
+webpack.config.js
+**/tsconfig.json
+**/package-lock.json
+!out/extension.js
+!out/**/*.js.map
+!out/**/*.d.ts
+!package.json
