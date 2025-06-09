@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { LLMService } from './llmService';
 import { PromptFactory } from './promptFactory';
 import { WebviewPanelManager } from './webviewPanels';
-import { CodeContext, ContextualSuggestion, WebviewMessage } from './types';
+import { CodeContext, ContextualSuggestion, WebviewMessage, ModelConfig, ProviderOption } from './types';
 
 export class AIAssistantViewProvider implements vscode.WebviewViewProvider {
   public static readonly viewType = 'aiAssistant.sidebarView';
@@ -11,11 +11,9 @@ export class AIAssistantViewProvider implements vscode.WebviewViewProvider {
   private _suggestions: ContextualSuggestion[] = [];
   private _isLoading = false;
   private _debounceTimer?: NodeJS.Timeout;
-
   constructor(
     private readonly _extensionUri: vscode.Uri,
-    private readonly _llmService: LLMService
-  ) {}
+    private readonly _llmService: LLMService  ) {}
 
   public resolveWebviewView(
     webviewView: vscode.WebviewView,
@@ -142,12 +140,16 @@ export class AIAssistantViewProvider implements vscode.WebviewViewProvider {
       cursorContext,
       fileName: document.fileName
     };
-  }
-
-  private async _generateVulnerabilityReport(): Promise<void> {
+  }  private async _generateVulnerabilityReport(): Promise<void> {
     const context = this._getCurrentCodeContext();
     if (!context) {
       vscode.window.showWarningMessage('Please open a code file to generate a vulnerability report.');
+      return;
+    }
+
+    // LLMService already auto-detected the best provider
+    if (!this._llmService.isConfigured()) {
+      vscode.window.showErrorMessage(`Please configure your AI provider settings.`);
       return;
     }
 
@@ -170,15 +172,17 @@ export class AIAssistantViewProvider implements vscode.WebviewViewProvider {
         vscode.window.showErrorMessage(`Error generating vulnerability report: ${error}`);
       }
     });
-  }
-
-  private async _explainSelectedCode(): Promise<void> {
+  }  private async _explainSelectedCode(): Promise<void> {
     const context = this._getCurrentCodeContext();
     if (!context || !context.selectedText.trim()) {
       vscode.window.showWarningMessage('Please select some code to explain.');
       return;
     }
-
+    // LLMService already auto-detected the best provider
+    if (!this._llmService.isConfigured()) {
+      vscode.window.showErrorMessage(`Please configure your AI provider settings.`);
+      return;
+    }
     vscode.window.withProgress({
       location: vscode.ProgressLocation.Notification,
       title: "Explaining selected code...",
@@ -198,15 +202,17 @@ export class AIAssistantViewProvider implements vscode.WebviewViewProvider {
         vscode.window.showErrorMessage(`Error explaining code: ${error}`);
       }
     });
-  }
-
-  private async _suggestRefactoring(): Promise<void> {
+  }  private async _suggestRefactoring(): Promise<void> {
     const context = this._getCurrentCodeContext();
     if (!context || !context.selectedText.trim()) {
       vscode.window.showWarningMessage('Please select some code to refactor.');
       return;
     }
-
+    // LLMService already auto-detected the best provider
+    if (!this._llmService.isConfigured()) {
+      vscode.window.showErrorMessage(`Please configure your AI provider settings.`);
+      return;
+    }
     vscode.window.withProgress({
       location: vscode.ProgressLocation.Notification,
       title: "Generating refactoring suggestions...",
@@ -226,15 +232,17 @@ export class AIAssistantViewProvider implements vscode.WebviewViewProvider {
         vscode.window.showErrorMessage(`Error generating refactoring suggestions: ${error}`);
       }
     });
-  }
-
-  private async _getTestIdeas(): Promise<void> {
+  }  private async _getTestIdeas(): Promise<void> {
     const context = this._getCurrentCodeContext();
     if (!context || !context.selectedText.trim()) {
       vscode.window.showWarningMessage('Please select some code to generate test ideas for.');
       return;
     }
-
+    // LLMService already auto-detected the best provider
+    if (!this._llmService.isConfigured()) {
+      vscode.window.showErrorMessage(`Please configure your AI provider settings.`);
+      return;
+    }
     vscode.window.withProgress({
       location: vscode.ProgressLocation.Notification,
       title: "Generating test case ideas...",
@@ -296,22 +304,30 @@ export class AIAssistantViewProvider implements vscode.WebviewViewProvider {
             display: flex;
             align-items: center;
             gap: 8px;
+        }        .suggestion {
+            background-color: var(--vscode-list-hoverBackground);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+            border-left: 4px solid var(--vscode-textLink-foreground);
+            transition: all 0.2s ease;
         }
         
-        .suggestion {
-            background-color: var(--vscode-list-hoverBackground);
-            border-radius: 4px;
-            padding: 12px;
-            margin-bottom: 8px;
-            border-left: 3px solid var(--vscode-textLink-foreground);
+        .suggestion:hover {
+            background-color: var(--vscode-list-activeSelectionBackground);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
         
         .suggestion-warning {
-            border-left-color: #ffc107;
+            border-left-color: #ff9500;
         }
         
         .suggestion-optimization {
-            border-left-color: #20c997;
+            border-left-color: #28a745;
+        }
+        
+        .suggestion-explanation {
+            border-left-color: #17a2b8;
         }
         
         .suggestion-best-practice {
@@ -320,15 +336,57 @@ export class AIAssistantViewProvider implements vscode.WebviewViewProvider {
         
         .suggestion-content {
             font-size: 14px;
-            line-height: 1.4;
+            line-height: 1.6;
+            color: var(--vscode-foreground);
+            word-wrap: break-word;
+            white-space: pre-wrap;
         }
         
         .suggestion-type {
-            font-size: 12px;
+            font-size: 11px;
             color: var(--vscode-descriptionForeground);
             text-transform: uppercase;
-            font-weight: 500;
-            margin-bottom: 4px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+        
+        .suggestion-expandable {
+            max-height: 120px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .suggestion-expanded {
+            max-height: none;
+        }
+        
+        .suggestion-fade {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: linear-gradient(transparent, var(--vscode-list-hoverBackground));
+            pointer-events: none;
+        }
+        
+        .expand-button {
+            background: var(--vscode-button-secondaryBackground);
+            border: none;
+            color: var(--vscode-button-secondaryForeground);
+            cursor: pointer;
+            font-size: 12px;
+            margin-top: 8px;
+            padding: 6px 12px;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+            width: 100%;
+        }
+        
+        .expand-button:hover {
+            background-color: var(--vscode-button-hoverBackground);
+            color: var(--vscode-button-foreground);
         }
         
         .button {
@@ -428,13 +486,28 @@ export class AIAssistantViewProvider implements vscode.WebviewViewProvider {
         <div class="loading">
             <div class="spinner"></div>
             Analyzing code...
-        </div>
-        ` : this._suggestions.length > 0 ? this._suggestions.map(suggestion => `
+        </div>        ` : this._suggestions.length > 0 ? this._suggestions.map((suggestion, index) => {
+            const content = suggestion.content || 'No content provided';
+            const isLong = content.length > 200;
+            const displayContent = isLong ? content.substring(0, 200) + '...' : content;
+            const escapedContent = content.replace(/'/g, "&#39;").replace(/"/g, "&quot;").replace(/\n/g, "\\n");
+            
+            return `
         <div class="suggestion suggestion-${suggestion.type}">
             <div class="suggestion-type">${suggestion.type.replace('-', ' ')}</div>
-            <div class="suggestion-content">${suggestion.content}</div>
-        </div>
-        `).join('') : `
+            <div class="suggestion-content ${isLong ? 'suggestion-expandable' : ''}" 
+                 id="content-${index}" 
+                 data-full-content="${escapedContent}">
+                ${displayContent.replace(/\n/g, '<br>')}
+                ${isLong ? '<div class="suggestion-fade" id="fade-${index}"></div>' : ''}
+            </div>
+            ${isLong ? `
+            <button class="expand-button" id="btn-${index}" onclick="toggleExpand(${index})">
+                Show More
+            </button>
+            ` : ''}
+        </div>`;
+        }).join(''): `
         <div class="no-suggestions">
             ${isConfigured ? 'Open a code file to see AI suggestions' : 'Configure API key to see suggestions'}
         </div>
@@ -462,9 +535,7 @@ export class AIAssistantViewProvider implements vscode.WebviewViewProvider {
         <button class="button" onclick="getTestIdeas()" ${!isConfigured ? 'disabled' : ''}>
             🧪 Get Test Case Ideas
         </button>
-    </div>
-
-    <script>
+    </div>    <script>
         const vscode = acquireVsCodeApi();
         
         function generateVulnerabilityReport() {
@@ -482,9 +553,46 @@ export class AIAssistantViewProvider implements vscode.WebviewViewProvider {
         function getTestIdeas() {
             vscode.postMessage({ command: 'getTestIdeas' });
         }
-        
-        function refresh() {
+          function refresh() {
             vscode.postMessage({ command: 'refresh' });
+        }
+        
+        function toggleExpand(index) {
+            const contentElement = document.getElementById('content-' + index);
+            const fadeElement = document.getElementById('fade-' + index);
+            const buttonElement = document.getElementById('btn-' + index);
+            
+            if (!contentElement || !buttonElement) {
+                return;
+            }
+            
+            const isExpanded = contentElement.classList.contains('suggestion-expanded');
+            const fullContent = contentElement.getAttribute('data-full-content');
+            
+            if (isExpanded) {
+                // Collapse
+                contentElement.classList.remove('suggestion-expanded');
+                contentElement.classList.add('suggestion-expandable');
+                if (fadeElement) fadeElement.style.display = 'block';
+                buttonElement.textContent = 'Show More';
+                
+                // Show truncated content
+                if (fullContent) {
+                    const truncated = fullContent.length > 200 ? fullContent.substring(0, 200) + '...' : fullContent;
+                    contentElement.innerHTML = truncated.replace(/\\n/g, '<br>') + (fadeElement ? '<div class="suggestion-fade" id="fade-' + index + '"></div>' : '');
+                }
+            } else {
+                // Expand
+                contentElement.classList.remove('suggestion-expandable');
+                contentElement.classList.add('suggestion-expanded');
+                if (fadeElement) fadeElement.style.display = 'none';
+                buttonElement.textContent = 'Show Less';
+                
+                // Show full content
+                if (fullContent) {
+                    contentElement.innerHTML = fullContent.replace(/\\n/g, '<br>').replace(/&#39;/g, "'").replace(/&quot;/g, '"');
+                }
+            }
         }
     </script>
 </body>

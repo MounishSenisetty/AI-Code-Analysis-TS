@@ -47,6 +47,24 @@ export interface TestCaseIdea {
   expectedBehavior: string;
 }
 
+// Model Provider Interfaces
+export type ModelProvider = 'gemini' | 'ollama';
+
+export interface ModelConfig {
+  provider: ModelProvider;
+  model: string;
+  apiKey?: string;
+  baseUrl?: string;
+}
+
+export interface ProviderOption {
+  label: string;
+  description: string;
+  provider: ModelProvider;
+  model: string;
+  detail?: string;
+}
+
 export interface WebviewMessage {
   command: string;
   data?: any;

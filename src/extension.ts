@@ -3,6 +3,7 @@ import { LLMService } from './llmService';
 import { AIAssistantViewProvider } from './aiAssistantViewProvider';
 import { WebviewPanelManager } from './webviewPanels';
 import { PromptFactory } from './promptFactory';
+import { ModelConfig } from './types';
 
 let llmService: LLMService;
 let aiAssistantProvider: AIAssistantViewProvider;
@@ -10,14 +11,14 @@ let aiAssistantProvider: AIAssistantViewProvider;
 export function activate(context: vscode.ExtensionContext) {
   console.log('AI Assistant extension is now active!');
 
-  // Initialize services
+  // Initialize services - LLMService will auto-detect the best provider
   llmService = new LLMService();
   aiAssistantProvider = new AIAssistantViewProvider(context.extensionUri, llmService);
 
   // Register the webview view provider
   context.subscriptions.push(
     vscode.window.registerWebviewViewProvider(
-      AIAssistantViewProvider.viewType,
+      AIAssistantViewProvider.viewType, 
       aiAssistantProvider
     )
   );
@@ -36,8 +37,9 @@ export function activate(context: vscode.ExtensionContext) {
         return;
       }
 
+      // LLMService already auto-detected the best provider
       if (!llmService.isConfigured()) {
-        vscode.window.showErrorMessage('Please configure your Gemini API key in settings.');
+        vscode.window.showErrorMessage(`Please configure your AI provider settings.`);
         return;
       }
 
@@ -86,8 +88,9 @@ export function activate(context: vscode.ExtensionContext) {
         return;
       }
 
+      // LLMService already auto-detected the best provider
       if (!llmService.isConfigured()) {
-        vscode.window.showErrorMessage('Please configure your Gemini API key in settings.');
+        vscode.window.showErrorMessage(`Please configure your AI provider settings.`);
         return;
       }
 
@@ -136,8 +139,9 @@ export function activate(context: vscode.ExtensionContext) {
         return;
       }
 
+      // LLMService already auto-detected the best provider
       if (!llmService.isConfigured()) {
-        vscode.window.showErrorMessage('Please configure your Gemini API key in settings.');
+        vscode.window.showErrorMessage(`Please configure your AI provider settings.`);
         return;
       }
 
@@ -186,8 +190,9 @@ export function activate(context: vscode.ExtensionContext) {
         return;
       }
 
+      // LLMService already auto-detected the best provider
       if (!llmService.isConfigured()) {
-        vscode.window.showErrorMessage('Please configure your Gemini API key in settings.');
+        vscode.window.showErrorMessage(`Please configure your AI provider settings.`);
         return;
       }
 

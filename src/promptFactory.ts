@@ -1,7 +1,6 @@
 import { CodeContext } from './types';
 
-export class PromptFactory {
-  static createContextualSuggestionPrompt(context: CodeContext): string {
+export class PromptFactory {  static createContextualSuggestionPrompt(context: CodeContext): string {
     return `You are an expert code assistant. Analyze the following code snippet and provide 1-3 brief, actionable suggestions.
 
 Language: ${context.language}
@@ -17,16 +16,16 @@ Focus on:
 - Best practices
 - Performance optimizations
 
-Respond with a JSON array of suggestions in this format:
+Respond with a JSON array of suggestions in this exact format:
 [
   {
-    "type": "explanation|optimization|best-practice|warning",
-    "content": "Brief suggestion text (max 100 characters)",
-    "severity": "low|medium|high"
+    "type": "explanation",
+    "content": "Clear and helpful suggestion text",
+    "severity": "low"
   }
 ]
 
-Keep suggestions concise and actionable. Only include the JSON array in your response.`;
+Make each suggestion clear and actionable. Content should be 1-2 sentences explaining what to improve and why. Only return the JSON array, nothing else.`;
   }
 
   static createVulnerabilityReportPrompt(context: CodeContext): string {

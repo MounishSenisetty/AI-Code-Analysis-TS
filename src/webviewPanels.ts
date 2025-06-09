@@ -189,16 +189,17 @@ export class WebviewPanelManager {
 
   private static markdownToHtml(markdown: string): string {
     // Basic markdown to HTML conversion for fallback
+    // return markdown
+    //   .replace(/### (.*?)$/gm, '<h3>$1</h3>')
+    //   .replace(/## (.*?)$/gm, '<h2>$1</h2>')
+    //   .replace(/# (.*?)$/gm, '<h1>$1</h1>')
+    //   .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    //   .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    //   .replace(/`(.*?)`/g, '<code>$1</code>')
+    //   .replace(/```(\w*)\n([\s\S]*?)```/g, '<pre><code class="language-$1">$2</code></pre>')
+    //   .replace(/\n/g, '<br>');
     return markdown
-      .replace(/### (.*?)$/gm, '<h3>$1</h3>')
-      .replace(/## (.*?)$/gm, '<h2>$1</h2>')
-      .replace(/# (.*?)$/gm, '<h1>$1</h1>')
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\*(.*?)\*/g, '<em>$1</em>')
-      .replace(/`(.*?)`/g, '<code>$1</code>')
-      .replace(/```(\w*)\n([\s\S]*?)```/g, '<pre><code class="language-$1">$2</code></pre>')
-      .replace(/\n/g, '<br>');
-  }
+    }
 
   public static showVulnerabilityReport(content: string): void {
     this.createOrShowPanel(
