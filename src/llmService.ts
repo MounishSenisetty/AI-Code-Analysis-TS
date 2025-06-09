@@ -7,7 +7,7 @@ export class LLMService {
   private geminiModel: ChatGoogleGenerativeAI | null = null;
   private ollamaClient: Ollama | null = null;
   private currentConfig: ModelConfig;
-  private apiKey: string = 'AIzaSyBEerOO5jAJRt5ccFyHjniaUptzdS3vx0I';
+  private apiKey: string = 'YOUR APIKEY';
     constructor(config?: ModelConfig) {
     console.log('AI Assistant: LLMService constructor called');
     
